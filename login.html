@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block title %}
+Login | Attendify
+{% endblock %}
+
+
+{% block auth_content %}
+
+<div class="login-page">
+
+
+    <!-- =====================================================
+         DECORATIVE ACADEMIC SIDE
+    ====================================================== -->
+
+    <div class="login-decoration">
+
+        <div class="academic-circle circle-one"></div>
+        <div class="academic-circle circle-two"></div>
+
+
+        <div class="book-decoration">
+            📚
+        </div>
+
+
+        <div class="pen-decoration">
+            ✏️
+        </div>
+
+
+        <div class="graduation-decoration">
+            🎓
+        </div>
+
+
+        <div class="login-brand">
+
+            <div class="login-brand-icon">
+                📚
+            </div>
+
+            <h2>
+                Attendify
+            </h2>
+
+            <p>
+                Student Attendance
+                Management System
+            </p>
+
+        </div>
+
+
+        <div class="login-message">
+
+            <h1>
+                Manage Attendance.
+                <br>
+                Empower Learning.
+            </h1>
+
+            <p>
+                A simple and reliable platform for
+                managing students, attendance,
+                academic records and reports.
+            </p>
+
+
+            <div class="login-features">
+
+                <div>
+                    <span>✓</span>
+                    Student Management
+                </div>
+
+                <div>
+                    <span>✓</span>
+                    Attendance Tracking
+                </div>
+
+                <div>
+                    <span>✓</span>
+                    Academic Reports
+                </div>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- =====================================================
+         LOGIN FORM
+    ====================================================== -->
+
+    <div class="login-form-area">
+
+
+        <div class="login-card">
+
+
+            <!-- MOBILE BRAND -->
+
+            <div class="mobile-login-brand">
+
+                <div class="login-logo">
+                    📚
+                </div>
+
+                <strong>
+                    Attendify
+                </strong>
+
+            </div>
+
+
+            <!-- HEADER -->
+
+            <div class="login-header">
+
+                <span class="login-welcome">
+                    Welcome back
+                </span>
+
+                <h1>
+                    Sign in to your account
+                </h1>
+
+                <p>
+                    Enter your administrator credentials
+                    to continue.
+                </p>
+
+            </div>
+
+
+            <!-- FLASH MESSAGES -->
+
+            {% with messages = get_flashed_messages(
+                with_categories=true
+            ) %}
+
+                {% if messages %}
+
+                    {% for category, message in messages %}
+
+                        <div class="alert {{ category }}">
+
+                            {{ message }}
+
+                        </div>
+
+                    {% endfor %}
+
+                {% endif %}
+
+            {% endwith %}
+
+
+
+            <!-- FORM -->
+
+            <form method="POST">
+
+
+                <!-- USERNAME -->
+
+                <div class="form-group login-input-group">
+
+                    <label>
+                        Username
+                    </label>
+
+                    <div class="login-input-wrapper">
+
+                        <span>
+                            👤
+                        </span>
+
+                        <input
+                            type="text"
+                            name="username"
+                            placeholder="Enter your username"
+                            autocomplete="username"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- PASSWORD -->
+
+                <div class="form-group login-input-group">
+
+                    <label>
+                        Password
+                    </label>
+
+                    <div class="login-input-wrapper">
+
+                        <span>
+                            🔐
+                        </span>
+
+                        <input
+                            type="password"
+                            name="password"
+                            placeholder="Enter your password"
+                            autocomplete="current-password"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- LOGIN BUTTON -->
+
+                <button
+                    type="submit"
+                    class="btn btn-primary login-button"
+                >
+
+                    <span>
+                        Sign In
+                    </span>
+
+                    <span>
+                        →
+                    </span>
+
+                </button>
+
+
+            </form>
+
+
+            <!-- FOOTER -->
+
+            <div class="login-footer">
+
+                <div>
+                    🔒 Secure Administrator Access
+                </div>
+
+                <span>
+                    Attendify © 2026
+                </span>
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+{% endblock %}

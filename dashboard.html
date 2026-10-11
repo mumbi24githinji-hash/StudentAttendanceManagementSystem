@@ -1,0 +1,375 @@
+{% extends "base.html" %}
+
+{% block title %}
+Dashboard | Attendify
+{% endblock %}
+
+{% block page_title %}
+Dashboard
+{% endblock %}
+
+{% block content %}
+
+<div class="welcome-section">
+    <div>
+        <h2>Good day, {{ username|capitalize }} 👋</h2>
+        <p>Here's an overview of your student attendance system.</p>
+    </div>
+
+    <div class="dashboard-date">
+        <span>Today</span>
+        <strong>{{ today.strftime("%d %B %Y") if today else "" }}</strong>
+    </div>
+</div>
+
+
+<!-- STATISTICS -->
+
+<div class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-icon">👨‍🎓</div>
+
+        <div>
+            <span>Total Students</span>
+            <strong>{{ total_students }}</strong>
+        </div>
+    </div>
+
+
+    <div class="stat-card">
+        <div class="stat-icon">📚</div>
+
+        <div>
+            <span>Total Courses</span>
+            <strong>{{ total_courses }}</strong>
+        </div>
+    </div>
+
+
+    <div class="stat-card">
+        <div class="stat-icon">✓</div>
+
+        <div>
+            <span>Present Today</span>
+            <strong>{{ present_today }}</strong>
+        </div>
+    </div>
+
+
+    <div class="stat-card">
+        <div class="stat-icon">!</div>
+
+        <div>
+            <span>Absent Today</span>
+            <strong>{{ absent_today }}</strong>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- MAIN DASHBOARD -->
+
+<div class="dashboard-grid">
+
+
+    <!-- RECENT ATTENDANCE -->
+
+    <div class="content-card">
+
+        <div class="card-header">
+
+            <div>
+                <h3>Recent Attendance</h3>
+
+                <p>
+                    Latest attendance records in the system.
+                </p>
+            </div>
+
+            <a
+                href="{{ url_for('attendance.attendance_records') }}"
+                class="action-edit"
+            >
+                View All
+            </a>
+
+        </div>
+
+
+        {% if recent_attendance %}
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Student</th>
+                        <th>Registration No.</th>
+                        <th>Course</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for record in recent_attendance %}
+
+                    <tr>
+
+                        <td>
+
+                            <strong>
+                                {{ record.student.first_name }}
+                                {{ record.student.last_name }}
+                            </strong>
+
+                        </td>
+
+
+                        <td>
+                            {{ record.student.registration_number }}
+                        </td>
+
+
+                        <td>
+
+                            {% if record.student.course %}
+
+                                <span class="course-code">
+                                    {{ record.student.course.code }}
+                                </span>
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+                            {{ record.date.strftime("%d %b %Y") }}
+                        </td>
+
+
+                        <td>
+
+                            {% if record.status == "Present" %}
+
+                            <span class="status-badge status-present">
+                                Present
+                            </span>
+
+                            {% else %}
+
+                            <span class="status-badge status-absent">
+                                Absent
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                📊
+            </div>
+
+            <h3>
+                No attendance recorded yet
+            </h3>
+
+            <p>
+                Start by marking attendance for a course.
+            </p>
+
+            <a
+                href="{{ url_for('attendance.mark_attendance') }}"
+                class="btn btn-primary"
+            >
+                Mark Attendance
+            </a>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+
+
+    <!-- QUICK ACTIONS -->
+
+    <div class="content-card quick-actions">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+                    Quick Actions
+                </h3>
+
+                <p>
+                    Common system actions.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <a
+            href="{{ url_for('students.add_student') }}"
+            class="quick-action"
+        >
+
+            <span class="quick-action-icon">
+                👨‍🎓
+            </span>
+
+            <div>
+
+                <strong>
+                    Add Student
+                </strong>
+
+                <small>
+                    Register a new student
+                </small>
+
+            </div>
+
+        </a>
+
+
+
+        <a
+            href="{{ url_for('attendance.mark_attendance') }}"
+            class="quick-action"
+        >
+
+            <span class="quick-action-icon">
+                ✓
+            </span>
+
+            <div>
+
+                <strong>
+                    Mark Attendance
+                </strong>
+
+                <small>
+                    Record student attendance
+                </small>
+
+            </div>
+
+        </a>
+
+
+
+        <a
+            href="{{ url_for('attendance.attendance_records') }}"
+            class="quick-action"
+        >
+
+            <span class="quick-action-icon">
+                📋
+            </span>
+
+            <div>
+
+                <strong>
+                    Attendance Records
+                </strong>
+
+                <small>
+                    View attendance history
+                </small>
+
+            </div>
+
+        </a>
+
+
+
+        <a
+            href="{{ url_for('attendance.attendance_reports') }}"
+            class="quick-action"
+        >
+
+            <span class="quick-action-icon">
+                📊
+            </span>
+
+            <div>
+
+                <strong>
+                    Attendance Reports
+                </strong>
+
+                <small>
+                    Analyze student performance
+                </small>
+
+            </div>
+
+        </a>
+
+
+
+        <!-- ATTENDANCE RATE -->
+
+        <div class="dashboard-rate">
+
+            <div class="rate-heading">
+
+                <span>
+                    Today's Attendance Rate
+                </span>
+
+                <strong>
+                    {{ attendance_rate }}%
+                </strong>
+
+            </div>
+
+
+            <div class="progress-bar">
+
+                <div
+                    class="progress-fill"
+                    style="width: {{ attendance_rate }}%;"
+                ></div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

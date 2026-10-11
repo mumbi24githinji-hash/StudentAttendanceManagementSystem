@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        {% block title %}
+        Student Attendance Management System
+        {% endblock %}
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+</head>
+
+<body>
+
+    {% if session.get("logged_in") %}
+
+    <aside class="sidebar">
+
+        <div class="sidebar-brand">
+
+            <div class="brand-icon">
+    📚
+</div>
+            <div>
+                <h2>Attendify</h2>
+                <span>Management System</span>
+            </div>
+
+        </div>
+
+
+        <nav class="sidebar-nav">
+
+            <p class="nav-label">
+                MAIN
+            </p>
+
+            <a
+                href="{{ url_for('dashboard') }}"
+                class="nav-link"
+            >
+                <span>▣</span>
+                Dashboard
+            </a>
+
+
+            <p class="nav-label">
+                MANAGEMENT
+            </p>
+
+            <a
+                href="{{ url_for('students.list_students') }}"
+                class="nav-link"
+            >
+                <span>◉</span>
+                Students
+            </a>
+
+            <a
+                href="{{ url_for('courses.list_courses') }}"
+                class="nav-link"
+            >
+                <span>▤</span>
+                Courses
+            </a>
+
+
+            <p class="nav-label">
+                ATTENDANCE
+            </p>
+
+            <a
+                href="{{ url_for('attendance.attendance_records') }}"
+                class="nav-link"
+            >
+                <span>✓</span>
+                Attendance
+            </a>
+            <a
+    href="{{ url_for('attendance.attendance_reports') }}"
+    class="nav-link"
+>
+    <span>📊</span>
+    Reports
+</a>
+
+        </nav>
+
+
+        <div class="sidebar-footer">
+
+            <div class="admin-profile">
+
+                <div class="avatar">
+                    {{ session.get("username", "A")[0]|upper }}
+                </div>
+
+                <div>
+
+                    <strong>
+                        {{ session.get("username", "Admin") }}
+                    </strong>
+
+                    <small>
+                        Administrator
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <a
+                href="{{ url_for('auth.logout') }}"
+                class="logout-link"
+            >
+                Logout
+            </a>
+
+        </div>
+
+    </aside>
+
+
+    <main class="main-content">
+
+        <header class="topbar">
+
+            <div>
+                <h1>
+                    {% block page_title %}
+                    Dashboard
+                    {% endblock %}
+                </h1>
+            </div>
+
+            <div class="topbar-user">
+
+                <span>
+                    Welcome, {{ session.get("username") }}
+                </span>
+
+            </div>
+
+        </header>
+
+
+        <section class="page-content">
+
+            {% with messages = get_flashed_messages(
+                with_categories=true
+            ) %}
+
+                {% if messages %}
+
+                    {% for category, message in messages %}
+
+                        <div class="alert {{ category }}">
+                            {{ message }}
+                        </div>
+
+                    {% endfor %}
+
+                {% endif %}
+
+            {% endwith %}
+
+
+            {% block content %}
+
+            {% endblock %}
+
+        </section>
+
+    </main>
+
+
+    {% else %}
+
+        {% block auth_content %}
+
+        {% endblock %}
+
+    {% endif %}
+
+
+    <script
+        src="{{ url_for('static', filename='js/app.js') }}"
+    ></script>
+
+</body>
+
+</html>
