@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Students - Student Attendance Management System</title>
+
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+
+<body class="dashboard-page">
+
+<nav class="navbar">
+
+    <div class="logo">
+        🎓 Student Attendance System
+    </div>
+
+    <div class="nav-links">
+
+        <a href="/dashboard.html">Dashboard</a>
+
+        <a href="/students.html">Students</a>
+
+        <a href="/attendance.html">Attendance</a>
+
+        <a href="/reports.html">Reports</a>
+
+        <button
+            id="logoutButton"
+            class="logout-button"
+            type="button"
+        >
+            Logout
+        </button>
+
+    </div>
+
+</nav>
+
+
+<main class="dashboard-container">
+
+    <div class="dashboard-header">
+
+        <div>
+
+            <h1>👨‍🎓 Student Management</h1>
+
+            <p>
+                Add, search, edit and remove students.
+            </p>
+
+        </div>
+
+        <div class="current-date">
+            📅 <span id="currentDate">Loading...</span>
+        </div>
+
+    </div>
+
+
+    <!-- ADD / EDIT FORM -->
+
+    <section class="dashboard-section">
+
+        <div class="section-heading">
+
+            <div>
+
+                <h2 id="formTitle">
+                    ➕ Add New Student
+                </h2>
+
+                <p id="formDescription">
+                    Enter the student's information below.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <form id="studentForm">
+
+            <input
+                type="hidden"
+                id="studentId"
+            >
+
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label for="regNo">
+                        Registration Number
+                    </label>
+
+                    <input
+                        type="text"
+                        id="regNo"
+                        placeholder="e.g. COK/001/2026"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="name">
+                        Student Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="name"
+                        placeholder="Enter full name"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="course">
+                        Course
+                    </label>
+
+                    <input
+                        type="text"
+                        id="course"
+                        placeholder="e.g. Diploma in IT"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="year">
+                        Year
+                    </label>
+
+                    <select id="year" required>
+
+                        <option value="">
+                            Select Year
+                        </option>
+
+                        <option value="Year 1">
+                            Year 1
+                        </option>
+
+                        <option value="Year 2">
+                            Year 2
+                        </option>
+
+                        <option value="Year 3">
+                            Year 3
+                        </option>
+
+                        <option value="Year 4">
+                            Year 4
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="gender">
+                        Gender
+                    </label>
+
+                    <select id="gender" required>
+
+                        <option value="">
+                            Select Gender
+                        </option>
+
+                        <option value="Male">
+                            Male
+                        </option>
+
+                        <option value="Female">
+                            Female
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <div class="form-buttons">
+
+                <button
+                    type="submit"
+                    id="saveButton"
+                    class="action-button"
+                >
+                    💾 Save Student
+                </button>
+
+
+                <button
+                    type="button"
+                    id="cancelButton"
+                    class="action-button cancel-button"
+                    style="display:none;"
+                >
+                    ✖ Cancel Edit
+                </button>
+
+            </div>
+
+        </form>
+
+    </section>
+
+
+    <!-- STUDENT LIST -->
+
+    <section class="dashboard-section">
+
+        <div class="section-heading">
+
+            <div>
+
+                <h2>
+                    📋 Registered Students
+                </h2>
+
+                <p>
+                    Students currently stored in the database.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="attendance-search">
+
+            <input
+                type="text"
+                id="searchInput"
+                placeholder="🔎 Search by name, registration number or course..."
+            >
+
+        </div>
+
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>#</th>
+
+                        <th>Reg No.</th>
+
+                        <th>Name</th>
+
+                        <th>Course</th>
+
+                        <th>Year</th>
+
+                        <th>Gender</th>
+
+                        <th>Actions</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="studentTableBody">
+
+                    <tr>
+
+                        <td
+                            colspan="7"
+                            class="loading"
+                        >
+                            Loading students...
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<script>
+
+let students = [];
+
+
+// ========================================================
+// DATE
+// ========================================================
+
+function displayCurrentDate() {
+
+    const today = new Date();
+
+    const options = {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+    };
+
+    document.getElementById(
+        "currentDate"
+    ).textContent =
+        today.toLocaleDateString(
+            "en-US",
+            options
+        );
+}
+
+
+// ========================================================
+// ESCAPE HTML
+// ========================================================
+
+function escapeHTML(value) {
+
+    const div =
+        document.createElement("div");
+
+    div.textContent =
+        value ?? "";
+
+    return div.innerHTML;
+}
+
+
+// ========================================================
+// LOAD STUDENTS
+// ========================================================
+
+async function loadStudents(
+    search = ""
+) {
+
+    try {
+
+        let url =
+            "/api/students";
+
+        if (search) {
+
+            url +=
+                "?search=" +
+                encodeURIComponent(search);
+
+        }
+
+
+        const response =
+            await fetch(url);
+
+
+        if (
+            response.status === 401
+        ) {
+
+            window.location.href =
+                "/login.html";
+
+            return;
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
+
+            alert(
+                data.message ||
+                "Unable to load students."
+            );
+
+            return;
+
+        }
+
+
+        students =
+            data.students || [];
+
+
+        displayStudents();
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "STUDENT LOAD ERROR:",
+            error
+        );
+
+    }
+
+}
+
+
+// ========================================================
+// DISPLAY STUDENTS
+// ========================================================
+
+function displayStudents() {
+
+    const body =
+        document.getElementById(
+            "studentTableBody"
+        );
+
+
+    body.innerHTML = "";
+
+
+    if (
+        students.length === 0
+    ) {
+
+        body.innerHTML = `
+
+            <tr>
+
+                <td
+                    colspan="7"
+                    class="empty-state"
+                >
+                    📭 No students found.
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+
+    }
+
+
+    students.forEach(
+        function(student, index) {
+
+            const row =
+                document.createElement("tr");
+
+
+            row.innerHTML = `
+
+                <td>
+                    ${index + 1}
+                </td>
+
+                <td>
+                    ${escapeHTML(
+                        student.regNo
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHTML(
+                        student.name
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHTML(
+                        student.course
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHTML(
+                        student.year
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHTML(
+                        student.gender
+                    )}
+                </td>
+
+                <td>
+
+                    <button
+                        type="button"
+                        class="edit-button"
+                        onclick="editStudent(${student.id})"
+                    >
+                        ✏️ Edit
+                    </button>
+
+                    <button
+                        type="button"
+                        class="delete-button"
+                        onclick="deleteStudent(${student.id})"
+                    >
+                        🗑️ Delete
+                    </button>
+
+                </td>
+
+            `;
+
+
+            body.appendChild(row);
+
+        }
+    );
+
+}
+
+
+// ========================================================
+// EDIT STUDENT
+// ========================================================
+
+function editStudent(
+    studentId
+) {
+
+    const student =
+        students.find(
+            function(item) {
+
+                return item.id === studentId;
+
+            }
+        );
+
+
+    if (!student) {
+
+        alert(
+            "Student could not be found."
+        );
+
+        return;
+
+    }
+
+
+    document.getElementById(
+        "studentId"
+    ).value =
+        student.id;
+
+
+    document.getElementById(
+        "regNo"
+    ).value =
+        student.regNo;
+
+
+    document.getElementById(
+        "name"
+    ).value =
+        student.name;
+
+
+    document.getElementById(
+        "course"
+    ).value =
+        student.course;
+
+
+    document.getElementById(
+        "year"
+    ).value =
+        student.year;
+
+
+    document.getElementById(
+        "gender"
+    ).value =
+        student.gender;
+
+
+    document.getElementById(
+        "formTitle"
+    ).textContent =
+        "✏️ Edit Student";
+
+
+    document.getElementById(
+        "formDescription"
+    ).textContent =
+        "Update the student's information below.";
+
+
+    document.getElementById(
+        "saveButton"
+    ).textContent =
+        "💾 Update Student";
+
+
+    document.getElementById(
+        "cancelButton"
+    ).style.display =
+        "inline-block";
+
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+}
+
+
+// ========================================================
+// CANCEL EDIT
+// ========================================================
+
+function cancelEdit() {
+
+    document.getElementById(
+        "studentForm"
+    ).reset();
+
+
+    document.getElementById(
+        "studentId"
+    ).value = "";
+
+
+    document.getElementById(
+        "formTitle"
+    ).textContent =
+        "➕ Add New Student";
+
+
+    document.getElementById(
+        "formDescription"
+    ).textContent =
+        "Enter the student's information below.";
+
+
+    document.getElementById(
+        "saveButton"
+    ).textContent =
+        "💾 Save Student";
+
+
+    document.getElementById(
+        "cancelButton"
+    ).style.display =
+        "none";
+
+}
+
+
+// ========================================================
+// SAVE OR UPDATE STUDENT
+// ========================================================
+
+document
+    .getElementById("studentForm")
+    .addEventListener(
+        "submit",
+        async function(event) {
+
+            event.preventDefault();
+
+
+            const studentId =
+                document.getElementById(
+                    "studentId"
+                ).value;
+
+
+            const studentData = {
+
+                regNo:
+                    document.getElementById(
+                        "regNo"
+                    ).value.trim(),
+
+                name:
+                    document.getElementById(
+                        "name"
+                    ).value.trim(),
+
+                course:
+                    document.getElementById(
+                        "course"
+                    ).value.trim(),
+
+                year:
+                    document.getElementById(
+                        "year"
+                    ).value,
+
+                gender:
+                    document.getElementById(
+                        "gender"
+                    ).value
+
+            };
+
+
+            try {
+
+                let url =
+                    "/api/students";
+
+
+                let method =
+                    "POST";
+
+
+                // ------------------------------------
+                // UPDATE
+                // ------------------------------------
+
+                if (studentId) {
+
+                    url =
+                        "/api/students/" +
+                        studentId;
+
+                    method =
+                        "PUT";
+
+                }
+
+
+                const response =
+                    await fetch(
+                        url,
+                        {
+                            method: method,
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify(
+                                    studentData
+                                )
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    alert(
+                        data.message ||
+                        "Unable to save student."
+                    );
+
+                    return;
+
+                }
+
+
+                alert(
+                    data.message
+                );
+
+
+                cancelEdit();
+
+                loadStudents();
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "SAVE STUDENT ERROR:",
+                    error
+                );
+
+                alert(
+                    "Unable to connect to the server."
+                );
+
+            }
+
+        }
+    );
+
+
+// ========================================================
+// CANCEL BUTTON
+// ========================================================
+
+document
+    .getElementById(
+        "cancelButton"
+    )
+    .addEventListener(
+        "click",
+        cancelEdit
+    );
+
+
+// ========================================================
+// DELETE STUDENT
+// ========================================================
+
+async function deleteStudent(
+    studentId
+) {
+
+    const student =
+        students.find(
+            function(item) {
+
+                return item.id === studentId;
+
+            }
+        );
+
+
+    if (!student) {
+
+        return;
+
+    }
+
+
+    const confirmed =
+        confirm(
+            "Are you sure you want to delete " +
+            student.name +
+            "?"
+        );
+
+
+    if (!confirmed) {
+
+        return;
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/students/" +
+                studentId,
+                {
+                    method: "DELETE"
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            alert(
+                data.message ||
+                "Unable to delete student."
+            );
+
+            return;
+
+        }
+
+
+        alert(
+            data.message
+        );
+
+
+        loadStudents();
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "DELETE ERROR:",
+            error
+        );
+
+        alert(
+            "Unable to connect to the server."
+        );
+
+    }
+
+}
+
+
+// ========================================================
+// SEARCH
+// ========================================================
+
+document
+    .getElementById(
+        "searchInput"
+    )
+    .addEventListener(
+        "input",
+        function() {
+
+            loadStudents(
+                this.value.trim()
+            );
+
+        }
+    );
+
+
+// ========================================================
+// LOGOUT
+// ========================================================
+
+document
+    .getElementById(
+        "logoutButton"
+    )
+    .addEventListener(
+        "click",
+        async function() {
+
+            try {
+
+                await fetch(
+                    "/api/logout",
+                    {
+                        method: "POST"
+                    }
+                );
+
+            }
+
+            catch (error) {
+
+                console.error(error);
+
+            }
+
+
+            window.location.href =
+                "/login.html";
+
+        }
+    );
+
+
+// ========================================================
+// START
+// ========================================================
+
+displayCurrentDate();
+
+loadStudents();
+
+</script>
+
+</body>
+
+</html>

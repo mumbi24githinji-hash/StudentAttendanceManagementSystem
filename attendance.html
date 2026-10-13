@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Attendance - Student Attendance System</title>
+
+    <link rel="stylesheet" href="/style.css">
+
+    <style>
+
+        /* ==========================================
+           ATTENDANCE BUTTONS
+           ========================================== */
+
+        .attendance-choice {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 125px;
+        }
+
+        .attendance-btn {
+            width: 125px;
+            padding: 9px 12px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            background: white;
+            transition: 0.2s;
+        }
+
+        /* PRESENT */
+
+        .present-btn {
+            color: #198754;
+            border: 2px solid #198754;
+        }
+
+        .present-btn:hover,
+        .present-btn.selected {
+            background: #198754;
+            color: white;
+        }
+
+        /* ABSENT */
+
+        .absent-btn {
+            color: #dc3545;
+            border: 2px solid #dc3545;
+        }
+
+        .absent-btn:hover,
+        .absent-btn.selected {
+            background: #dc3545;
+            color: white;
+        }
+
+        /* SAVE BUTTON */
+
+        #saveButton {
+            margin-top: 10px;
+        }
+
+        /* EMPTY MESSAGE */
+
+        .empty-message {
+            text-align: center;
+            padding: 30px;
+            font-size: 16px;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- ==================================================
+     NAVIGATION
+     ================================================== -->
+
+<nav class="navbar">
+
+    <div class="logo">
+        🎓 Student Attendance System
+    </div>
+
+
+    <div class="nav-links">
+
+        <a href="/dashboard.html">
+            Dashboard
+        </a>
+
+        <a href="/students.html">
+            Students
+        </a>
+
+        <a href="/attendance.html">
+            Attendance
+        </a>
+
+        <a href="/reports.html">
+            Reports
+        </a>
+
+        <button
+            type="button"
+            class="logout-button"
+            onclick="logout()">
+
+            Logout
+
+        </button>
+
+    </div>
+
+</nav>
+
+
+
+<!-- ==================================================
+     MAIN CONTENT
+     ================================================== -->
+
+<main class="dashboard-container">
+
+
+    <!-- PAGE HEADER -->
+
+    <div class="dashboard-header">
+
+        <div>
+
+            <h1>
+                📝 Student Attendance
+            </h1>
+
+            <p>
+                Mark student attendance for the selected date.
+            </p>
+
+        </div>
+
+
+        <div class="current-date">
+
+            📅
+
+            <span id="todayText">
+                Loading...
+            </span>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ==================================================
+         DATE SECTION
+         ================================================== -->
+
+    <section class="dashboard-section">
+
+        <h2>
+            📅 Attendance Date
+        </h2>
+
+        <p>
+            Select the date for which you want to record attendance.
+        </p>
+
+
+        <div class="attendance-controls">
+
+
+            <div class="form-group">
+
+                <label for="attendanceDate">
+                    Select Date
+                </label>
+
+                <input
+                    type="date"
+                    id="attendanceDate"
+                    required>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="action-button"
+                onclick="loadAttendance()">
+
+                🔄 Load Attendance
+
+            </button>
+
+
+        </div>
+
+    </section>
+
+
+
+    <!-- ==================================================
+         ATTENDANCE TABLE
+         ================================================== -->
+
+    <section class="dashboard-section">
+
+
+        <h2>
+            👨‍🎓 Student Attendance
+        </h2>
+
+
+        <p>
+            Choose either Present or Absent for each student.
+        </p>
+
+
+        <div class="table-container">
+
+
+            <table>
+
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            #
+                        </th>
+
+                        <th>
+                            Reg No.
+                        </th>
+
+                        <th>
+                            Student Name
+                        </th>
+
+                        <th>
+                            Course
+                        </th>
+
+                        <th>
+                            Attendance
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="attendanceBody">
+
+                    <tr>
+
+                        <td
+                            colspan="5"
+                            class="empty-message">
+
+                            Loading students...
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+
+            </table>
+
+
+        </div>
+
+
+
+        <!-- SAVE BUTTON -->
+
+        <div class="form-buttons">
+
+            <button
+                type="button"
+                id="saveButton"
+                class="action-button"
+                onclick="saveAttendance()">
+
+                💾 Save Attendance
+
+            </button>
+
+        </div>
+
+
+    </section>
+
+
+</main>
+
+
+
+<!-- ==================================================
+     JAVASCRIPT
+     ================================================== -->
+
+<script>
+
+
+/* ==================================================
+   VARIABLES
+   ================================================== */
+
+let students = [];
+
+let attendance = {};
+
+
+
+/* ==================================================
+   GET TODAY
+   ================================================== */
+
+function getToday() {
+
+    const now = new Date();
+
+
+    const year =
+        now.getFullYear();
+
+
+    const month =
+        String(
+            now.getMonth() + 1
+        ).padStart(2, "0");
+
+
+    const day =
+        String(
+            now.getDate()
+        ).padStart(2, "0");
+
+
+    return (
+        year +
+        "-" +
+        month +
+        "-" +
+        day
+    );
+
+}
+
+
+
+/* ==================================================
+   DISPLAY TODAY
+   ================================================== */
+
+function displayToday() {
+
+    const now =
+        new Date();
+
+
+    document.getElementById(
+        "todayText"
+    ).textContent =
+        now.toLocaleDateString(
+            "en-US",
+            {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric"
+            }
+        );
+
+}
+
+
+
+/* ==================================================
+   LOAD STUDENTS
+   ================================================== */
+
+async function loadStudents() {
+
+    try {
+
+
+        const response =
+            await fetch(
+                "/api/students"
+            );
+
+
+        if (
+            response.status === 401
+        ) {
+
+            window.location.href =
+                "/login.html";
+
+            return;
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
+
+            alert(
+                data.message ||
+                "Unable to load students."
+            );
+
+            return;
+
+        }
+
+
+        students =
+            data.students || [];
+
+
+        displayStudents();
+
+
+        await loadAttendance();
+
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Student loading error:",
+            error
+        );
+
+
+        document.getElementById(
+            "attendanceBody"
+        ).innerHTML = `
+
+            <tr>
+
+                <td
+                    colspan="5"
+                    class="empty-message">
+
+                    ❌ Unable to load students.
+
+                </td>
+
+            </tr>
+
+        `;
+
+    }
+
+}
+
+
+
+/* ==================================================
+   DISPLAY STUDENTS
+   ================================================== */
+
+function displayStudents() {
+
+    const body =
+        document.getElementById(
+            "attendanceBody"
+        );
+
+
+    body.innerHTML = "";
+
+
+    if (
+        students.length === 0
+    ) {
+
+        body.innerHTML = `
+
+            <tr>
+
+                <td
+                    colspan="5"
+                    class="empty-message">
+
+                    📭 No students have been registered yet.
+
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+
+    }
+
+
+
+    students.forEach(
+        function(student, index) {
+
+
+            const id =
+                String(
+                    student.id
+                );
+
+
+            const currentStatus =
+                attendance[id] || "";
+
+
+
+            const row =
+                document.createElement(
+                    "tr"
+                );
+
+
+
+            row.innerHTML = `
+
+                <td>
+                    ${index + 1}
+                </td>
+
+
+                <td>
+                    ${student.regNo}
+                </td>
+
+
+                <td>
+                    ${student.name}
+                </td>
+
+
+                <td>
+                    ${student.course}
+                </td>
+
+
+                <td>
+
+                    <div class="attendance-choice">
+
+
+                        <button
+                            type="button"
+                            class="attendance-btn present-btn"
+                            id="present-${id}"
+                            onclick="markAttendance(${student.id}, 'Present')">
+
+                            ✅ Present
+
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="attendance-btn absent-btn"
+                            id="absent-${id}"
+                            onclick="markAttendance(${student.id}, 'Absent')">
+
+                            ❌ Absent
+
+                        </button>
+
+
+                    </div>
+
+                </td>
+
+            `;
+
+
+            body.appendChild(
+                row
+            );
+
+
+
+            /*
+             * Restore saved status.
+             */
+
+            if (
+                currentStatus === "Present"
+            ) {
+
+                selectButton(
+                    id,
+                    "Present"
+                );
+
+            }
+
+
+            if (
+                currentStatus === "Absent"
+            ) {
+
+                selectButton(
+                    id,
+                    "Absent"
+                );
+
+            }
+
+        }
+    );
+
+}
+
+
+
+/* ==================================================
+   MARK ATTENDANCE
+   ================================================== */
+
+function markAttendance(
+    studentId,
+    status
+) {
+
+
+    const id =
+        String(
+            studentId
+        );
+
+
+    /*
+     * Store the selected
+     * attendance status.
+     */
+
+    attendance[id] =
+        status;
+
+
+
+    /*
+     * Find Present button.
+     */
+
+    const presentButton =
+        document.getElementById(
+            "present-" + id
+        );
+
+
+
+    /*
+     * Find Absent button.
+     */
+
+    const absentButton =
+        document.getElementById(
+            "absent-" + id
+        );
+
+
+
+    /*
+     * Remove previous selection.
+     */
+
+    if (
+        presentButton
+    ) {
+
+        presentButton.classList.remove(
+            "selected"
+        );
+
+    }
+
+
+    if (
+        absentButton
+    ) {
+
+        absentButton.classList.remove(
+            "selected"
+        );
+
+    }
+
+
+
+    /*
+     * Select the chosen
+     * attendance status.
+     */
+
+    if (
+        status === "Present"
+    ) {
+
+        if (
+            presentButton
+        ) {
+
+            presentButton.classList.add(
+                "selected"
+            );
+
+        }
+
+    }
+
+
+
+    if (
+        status === "Absent"
+    ) {
+
+        if (
+            absentButton
+        ) {
+
+            absentButton.classList.add(
+                "selected"
+            );
+
+        }
+
+    }
+
+
+}
+
+
+
+/* ==================================================
+   SELECT BUTTON
+   ================================================== */
+
+function selectButton(
+    id,
+    status
+) {
+
+
+    let button;
+
+
+    if (
+        status === "Present"
+    ) {
+
+        button =
+            document.getElementById(
+                "present-" + id
+            );
+
+    }
+
+
+    if (
+        status === "Absent"
+    ) {
+
+        button =
+            document.getElementById(
+                "absent-" + id
+            );
+
+    }
+
+
+    if (
+        button
+    ) {
+
+        button.classList.add(
+            "selected"
+        );
+
+    }
+
+}
+
+
+
+/* ==================================================
+   LOAD EXISTING ATTENDANCE
+   ================================================== */
+
+async function loadAttendance() {
+
+
+    const selectedDate =
+        document.getElementById(
+            "attendanceDate"
+        ).value;
+
+
+
+    if (
+        !selectedDate
+    ) {
+
+        return;
+
+    }
+
+
+
+    try {
+
+
+        const response =
+            await fetch(
+                "/api/attendance?date=" +
+                encodeURIComponent(
+                    selectedDate
+                )
+            );
+
+
+
+        if (
+            response.status === 401
+        ) {
+
+            window.location.href =
+                "/login.html";
+
+            return;
+
+        }
+
+
+
+        const data =
+            await response.json();
+
+
+
+        if (
+            !data.success
+        ) {
+
+            alert(
+                data.message ||
+                "Unable to load attendance."
+            );
+
+            return;
+
+        }
+
+
+
+        /*
+         * Clear old selections.
+         */
+
+        attendance = {};
+
+
+
+        /*
+         * Load attendance
+         * from SQLite.
+         */
+
+        data.records.forEach(
+            function(record) {
+
+                attendance[
+                    String(
+                        record.studentId
+                    )
+                ] =
+                    record.status;
+
+            }
+        );
+
+
+
+        /*
+         * Display students
+         * again with their
+         * saved status.
+         */
+
+        displayStudents();
+
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Attendance loading error:",
+            error
+        );
+
+
+        alert(
+            "Unable to load attendance."
+        );
+
+    }
+
+}
+
+
+
+/* ==================================================
+   SAVE ATTENDANCE
+   ================================================== */
+
+async function saveAttendance() {
+
+
+    const selectedDate =
+        document.getElementById(
+            "attendanceDate"
+        ).value;
+
+
+
+    if (
+        !selectedDate
+    ) {
+
+        alert(
+            "Please select an attendance date."
+        );
+
+        return;
+
+    }
+
+
+
+    const records = [];
+
+
+
+    /*
+     * Collect selected
+     * attendance.
+     */
+
+    students.forEach(
+        function(student) {
+
+
+            const status =
+                attendance[
+                    String(
+                        student.id
+                    )
+                ];
+
+
+
+            if (
+                status
+            ) {
+
+                records.push({
+
+                    studentId:
+                        student.id,
+
+                    status:
+                        status
+
+                });
+
+            }
+
+        }
+    );
+
+
+
+    if (
+        records.length === 0
+    ) {
+
+        alert(
+            "Please select Present or Absent for at least one student."
+        );
+
+        return;
+
+    }
+
+
+
+    const button =
+        document.getElementById(
+            "saveButton"
+        );
+
+
+    button.disabled =
+        true;
+
+
+    button.textContent =
+        "💾 Saving...";
+
+
+
+    try {
+
+
+        const response =
+            await fetch(
+                "/api/attendance",
+                {
+
+                    method:
+                        "POST",
+
+                    headers: {
+
+                        "Content-Type":
+                            "application/json"
+
+                    },
+
+                    body:
+                        JSON.stringify({
+
+                            date:
+                                selectedDate,
+
+                            records:
+                                records
+
+                        })
+
+                }
+            );
+
+
+
+        const data =
+            await response.json();
+
+
+
+        if (
+            !response.ok
+        ) {
+
+            alert(
+                data.message ||
+                "Attendance could not be saved."
+            );
+
+            return;
+
+        }
+
+
+
+        alert(
+            "✅ " +
+            data.message
+        );
+
+
+
+        /*
+         * Reload from database
+         * to confirm saving.
+         */
+
+        await loadAttendance();
+
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Save attendance error:",
+            error
+        );
+
+
+        alert(
+            "❌ Could not connect to the Flask server."
+        );
+
+    }
+
+    finally {
+
+        button.disabled =
+            false;
+
+
+        button.textContent =
+            "💾 Save Attendance";
+
+    }
+
+}
+
+
+
+/* ==================================================
+   DATE CHANGE
+   ================================================== */
+
+document.getElementById(
+    "attendanceDate"
+).addEventListener(
+    "change",
+    function() {
+
+        loadAttendance();
+
+    }
+);
+
+
+
+/* ==================================================
+   LOGOUT
+   ================================================== */
+
+async function logout() {
+
+
+    try {
+
+        await fetch(
+            "/api/logout",
+            {
+                method:
+                    "POST"
+            }
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+    }
+
+
+    window.location.href =
+        "/login.html";
+
+}
+
+
+
+/* ==================================================
+   START
+   ================================================== */
+
+document.getElementById(
+    "attendanceDate"
+).value =
+    getToday();
+
+
+displayToday();
+
+
+loadStudents();
+
+
+</script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,719 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>
+    Reports - Student Attendance Management System
+</title>
+
+<link
+    rel="stylesheet"
+    href="/style.css"
+>
+
+</head><body class="dashboard-page"><!-- =====================================================
+     NAVIGATION
+     ===================================================== --><nav class="navbar"><div class="logo">
+    🎓 Student Attendance System
+</div>
+
+
+<div class="nav-links">
+
+    <a href="/dashboard.html">
+        Dashboard
+    </a>
+
+    <a href="/students.html">
+        Students
+    </a>
+
+    <a href="/attendance.html">
+        Attendance
+    </a>
+
+    <a href="/reports.html">
+        Reports
+    </a>
+
+    <button
+        id="logoutButton"
+        class="logout-button"
+        type="button"
+    >
+        Logout
+    </button>
+
+</div>
+
+</nav><!-- =====================================================
+     MAIN
+     ===================================================== --><main class="dashboard-container"><!-- HEADER -->
+
+<div class="dashboard-header">
+
+    <div>
+
+        <h1>
+            📊 Attendance Reports
+        </h1>
+
+        <p>
+            View student attendance performance and statistics.
+        </p>
+
+    </div>
+
+
+    <div class="current-date">
+
+        📅
+
+        <span id="currentDate">
+            Loading...
+        </span>
+
+    </div>
+
+</div>
+
+
+
+<!-- =================================================
+     SUMMARY CARDS
+     ================================================= -->
+
+<div class="stats-grid">
+
+
+    <div class="stat-card">
+
+        <div class="stat-icon">
+            👨‍🎓
+        </div>
+
+        <div>
+
+            <span class="stat-label">
+                Total Students
+            </span>
+
+            <strong id="totalStudents">
+                0
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+        <div class="stat-icon">
+            📝
+        </div>
+
+        <div>
+
+            <span class="stat-label">
+                Attendance Records
+            </span>
+
+            <strong id="totalRecords">
+                0
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+        <div class="stat-icon">
+            📈
+        </div>
+
+        <div>
+
+            <span class="stat-label">
+                Overall Attendance
+            </span>
+
+            <strong id="overallRate">
+                0%
+            </strong>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- =================================================
+     REPORT TABLE
+     ================================================= -->
+
+<section class="dashboard-section">
+
+
+    <div class="section-heading">
+
+        <div>
+
+            <h2>
+                Student Performance Report
+            </h2>
+
+            <p>
+                Attendance statistics for every registered student.
+            </p>
+
+        </div>
+
+
+        <button
+            type="button"
+            id="printReport"
+            class="action-button save-attendance-button"
+        >
+            🖨️ Print Report
+        </button>
+
+    </div>
+
+
+
+    <!-- SEARCH -->
+
+    <div class="attendance-search">
+
+        <input
+            type="text"
+            id="reportSearch"
+            placeholder="🔎 Search student..."
+        >
+
+    </div>
+
+
+
+    <!-- TABLE -->
+
+    <div class="table-container">
+
+        <table id="reportTable">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        #
+                    </th>
+
+                    <th>
+                        Reg No.
+                    </th>
+
+                    <th>
+                        Student Name
+                    </th>
+
+                    <th>
+                        Course
+                    </th>
+
+                    <th>
+                        Total
+                    </th>
+
+                    <th>
+                        Present
+                    </th>
+
+                    <th>
+                        Absent
+                    </th>
+
+                    <th>
+                        Percentage
+                    </th>
+
+                    <th>
+                        Performance
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody id="reportBody">
+
+                <tr>
+
+                    <td
+                        colspan="9"
+                        class="loading"
+                    >
+                        Loading reports...
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+</main><!-- =====================================================
+     JAVASCRIPT
+     ===================================================== --><script>
+
+
+// ========================================================
+// DATA
+// ========================================================
+
+let reports = [];
+
+
+// ========================================================
+// CURRENT DATE
+// ========================================================
+
+function displayCurrentDate() {
+
+    const today =
+        new Date();
+
+
+    const options = {
+
+        weekday: "long",
+
+        year: "numeric",
+
+        month: "long",
+
+        day: "numeric"
+
+    };
+
+
+    document.getElementById(
+        "currentDate"
+    ).textContent =
+        today.toLocaleDateString(
+            "en-US",
+            options
+        );
+
+}
+
+
+// ========================================================
+// ESCAPE HTML
+// ========================================================
+
+function escapeHTML(value) {
+
+    const div =
+        document.createElement("div");
+
+    div.textContent =
+        value ?? "";
+
+    return div.innerHTML;
+
+}
+
+
+// ========================================================
+// LOAD REPORTS
+// ========================================================
+
+async function loadReports() {
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/reports"
+            );
+
+
+        if (
+            response.status === 401
+        ) {
+
+            window.location.href =
+                "/login.html";
+
+            return;
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
+
+            alert(
+                data.message ||
+                "Unable to load reports."
+            );
+
+            return;
+
+        }
+
+
+        // --------------------------------------------
+        // SUMMARY
+        // --------------------------------------------
+
+        document.getElementById(
+            "totalStudents"
+        ).textContent =
+            data.totalStudents;
+
+
+        document.getElementById(
+            "totalRecords"
+        ).textContent =
+            data.totalRecords;
+
+
+        document.getElementById(
+            "overallRate"
+        ).textContent =
+            data.overallRate + "%";
+
+
+        reports =
+            data.reports || [];
+
+
+        displayReports(
+            reports
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "REPORT ERROR:",
+            error
+        );
+
+        document.getElementById(
+            "reportBody"
+        ).innerHTML = `
+
+            <tr>
+
+                <td
+                    colspan="9"
+                    class="empty-state"
+                >
+                    ❌ Unable to load reports.
+                </td>
+
+            </tr>
+
+        `;
+
+    }
+
+}
+
+
+// ========================================================
+// DISPLAY REPORTS
+// ========================================================
+
+function displayReports(
+    data
+) {
+
+    const body =
+        document.getElementById(
+            "reportBody"
+        );
+
+
+    body.innerHTML = "";
+
+
+    if (
+        data.length === 0
+    ) {
+
+        body.innerHTML = `
+
+            <tr>
+
+                <td
+                    colspan="9"
+                    class="empty-state"
+                >
+                    📭 No students or attendance records found.
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+
+    }
+
+
+    data.forEach(
+        function(student, index) {
+
+            let performanceClass =
+                "";
+
+
+            if (
+                student.performance ===
+                "Excellent"
+            ) {
+
+                performanceClass =
+                    "excellent";
+
+            }
+
+            else if (
+                student.performance ===
+                "Average"
+            ) {
+
+                performanceClass =
+                    "average";
+
+            }
+
+            else {
+
+                performanceClass =
+                    "poor";
+
+            }
+
+
+            const row =
+                document.createElement(
+                    "tr"
+                );
+
+
+            row.innerHTML = `
+
+                <td>
+                    ${index + 1}
+                </td>
+
+                <td>
+                    ${escapeHTML(
+                        student.regNo
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHTML(
+                        student.name
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHTML(
+                        student.course
+                    )}
+                </td>
+
+                <td>
+                    ${student.total}
+                </td>
+
+                <td>
+                    ${student.present}
+                </td>
+
+                <td>
+                    ${student.absent}
+                </td>
+
+                <td>
+
+                    <strong>
+                        ${student.percentage}%
+                    </strong>
+
+                </td>
+
+                <td>
+
+                    <span
+                        class="performance-badge ${performanceClass}"
+                    >
+                        ${student.performance}
+                    </span>
+
+                </td>
+
+            `;
+
+
+            body.appendChild(
+                row
+            );
+
+        }
+    );
+
+}
+
+
+// ========================================================
+// SEARCH
+// ========================================================
+
+document
+    .getElementById(
+        "reportSearch"
+    )
+    .addEventListener(
+        "input",
+        function() {
+
+            const search =
+                this.value
+                    .trim()
+                    .toLowerCase();
+
+
+            const filtered =
+                reports.filter(
+                    function(student) {
+
+                        return (
+
+                            student.name
+                                .toLowerCase()
+                                .includes(
+                                    search
+                                )
+
+                            ||
+
+                            student.regNo
+                                .toLowerCase()
+                                .includes(
+                                    search
+                                )
+
+                            ||
+
+                            student.course
+                                .toLowerCase()
+                                .includes(
+                                    search
+                                )
+
+                        );
+
+                    }
+                );
+
+
+            displayReports(
+                filtered
+            );
+
+        }
+    );
+
+
+// ========================================================
+// PRINT REPORT
+// ========================================================
+
+document
+    .getElementById(
+        "printReport"
+    )
+    .addEventListener(
+        "click",
+        function() {
+
+            window.print();
+
+        }
+    );
+
+
+// ========================================================
+// LOGOUT
+// ========================================================
+
+document
+    .getElementById(
+        "logoutButton"
+    )
+    .addEventListener(
+        "click",
+        async function() {
+
+            try {
+
+                await fetch(
+                    "/api/logout",
+                    {
+                        method: "POST"
+                    }
+                );
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    error
+                );
+
+            }
+
+
+            window.location.href =
+                "/login.html";
+
+        }
+    );
+
+
+// ========================================================
+// START
+// ========================================================
+
+displayCurrentDate();
+
+loadReports();
+
+
+</script></body></html>
